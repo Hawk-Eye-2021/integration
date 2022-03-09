@@ -3,6 +3,9 @@ import {extractEntities} from "./entityExtractor/entitiyExtractor";
 import {Source} from "./types/types";
 import {extractSentiment} from "./sentimentExtractor/sentimentExtractor";
 import {addContentToThemes} from "./api/api";
+import express from 'express';
+import cors from "cors"
+import bodyParser from "body-parser";
 
 import cron from "node-cron";
 
@@ -27,4 +30,20 @@ cron.schedule("0 * * * *", () => {
             .then(contents => Promise.all(contents.map(extractSentiment)))
             .then(contents => Promise.all(contents.map(addContentToThemes)))
     }))
+})
+
+const app = express();
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+    console.log(`Timezones by location application is running on port ${port}.`);
+});
+
+app.use(cors())
+app.use(bodyParser.json())
+
+app.get("/health", (req, res) => {
+    console.log("health")
+    res.send("OK")
 })
