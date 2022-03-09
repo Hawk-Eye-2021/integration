@@ -8,6 +8,7 @@ import cors from "cors"
 import bodyParser from "body-parser";
 
 import cron from "node-cron";
+import moment, {Moment} from "moment";
 
 const sources: Source[] = [
     {
@@ -22,14 +23,24 @@ const sources: Source[] = [
 
 // TODO Limit concurrency
 
-cron.schedule("0 * * * *", () => {
-    Promise.all(sources.map(source => {
+let lastRun: Moment | undefined
+
+const shouldRun = () => !lastRun || lastRun.isBefore(moment().subtract(1, "hour"))
+
+const run = async () => {
+    lastRun = moment()
+    return Promise.all(sources.map(source => {
         getContents(source)
             .then(contents => Promise.all(contents.map((content) => getContent(content, source))))
             .then(contents => Promise.all(contents.map(extractEntities)))
             .then(contents => Promise.all(contents.map(extractSentiment)))
             .then(contents => Promise.all(contents.map(addContentToThemes)))
     }))
+}
+cron.schedule("0 * * * *", () => {
+    if (shouldRun()){
+        run()
+    }
 })
 
 const app = express();
@@ -45,5 +56,11 @@ app.use(bodyParser.json())
 
 app.get("/health", (req, res) => {
     console.log("health")
+    res.send("OK")
+})
+
+app.get("/run", async (req, res) => {
+    console.log("running")
+    run()
     res.send("OK")
 })
