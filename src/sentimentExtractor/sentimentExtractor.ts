@@ -3,6 +3,7 @@ import {urls} from "../config/config"
 import {Content} from "../types/types";
 
 export const extractSentiment = (content: Content): Promise<Content> => {
+    console.log(`Extracting sentiment from: ${content.title}`)
 
     return fetch(`${urls.sentimentExtractor}/api/sentiment`,
         {

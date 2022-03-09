@@ -19,7 +19,7 @@ const sources: Source[] = [
 
 // TODO Limit concurrency
 
-cron.schedule("40,10 * * * *", () => {
+cron.schedule("0 * * * *", () => {
     Promise.all(sources.map(source => {
         getContents(source)
             .then(contents => Promise.all(contents.map((content) => getContent(content, source))))

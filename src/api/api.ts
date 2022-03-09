@@ -51,6 +51,7 @@ const addContentToTheme = (theme: Theme, content: Content) => {
 }
 
 export const addContentToThemes = async (content: Content): Promise<void> => {
+    console.log(`Adding content to themes: ${content.title}`)
 
     try {
         const savedContent = await createContent(content);

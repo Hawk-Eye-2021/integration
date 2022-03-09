@@ -3,6 +3,7 @@ import {urls} from "../config/config"
 import {Content} from "../types/types";
 
 export const extractEntities = (content: Content): Promise<Content> => {
+    console.log(`Extracting entities from: ${content.title}`)
 
     return fetch(`${urls.entityExtractor}/contents`,
         {
