@@ -1,0 +1,31 @@
+{
+  "name": "hack-eye-integration",
+  "version": "1.0.0",
+  "description": "Integration module",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "ts-node src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hawk-Eye-2021/intregration.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hawk-Eye-2021/intregration/issues"
+  },
+  "homepage": "https://github.com/Hawk-Eye-2021/intregration#readme",
+  "dependencies": {
+    "@types/node-cron": "^3.0.1",
+    "@types/node-fetch": "^2.5.12",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "moment": "^2.29.1",
+    "node-cron": "^3.0.0",
+    "node-fetch": "^2.6.1",
+    "ts-node": "^10.2.0",
+    "tslint": "6.1.3",
+    "typescript": "4.3.5"
+  }
+}
