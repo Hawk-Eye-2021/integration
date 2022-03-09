@@ -23,12 +23,9 @@ const sources: Source[] = [
 
 // TODO Limit concurrency
 
-let lastRun: Moment | undefined
 
-const shouldRun = () => !lastRun || lastRun.isBefore(moment().subtract(1, "hour"))
 
 const run = async () => {
-    lastRun = moment()
     return Promise.all(sources.map(source => {
         getContents(source)
             .then(contents => Promise.all(contents.map((content) => getContent(content, source))))
@@ -38,9 +35,7 @@ const run = async () => {
     }))
 }
 cron.schedule("0 * * * *", () => {
-    if (shouldRun()){
-        run()
-    }
+    run()
 })
 
 const app = express();
