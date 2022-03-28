@@ -10,7 +10,7 @@ export const getContents = async (source: Source): Promise<string[]> => {
 
 export const getContent = async (url: string, source: Source): Promise<Content> => {
     console.log(`Getting content from: ${url}`)
-    return fetch(`${urls.scrapper}/sources/infobae/contents/${encodeURIComponent(url)}`)
+    return fetch(`${urls.scrapper}/sources/${source.name.toLowerCase()}/contents/${encodeURIComponent(url)}`)
         .then(res => res.json())
         .then(res => ({...res, url, source}))
 }

@@ -4,7 +4,7 @@ export interface Content {
     content: string[];
     source: Source;
     entities?: string[]
-    sentiment?: string;
+    sentiments?: object;
     id?: number;
 }
 

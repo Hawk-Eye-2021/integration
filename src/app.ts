@@ -2,33 +2,22 @@ import {getContents, getContent} from "./scrapper/scrapper";
 import {extractEntities} from "./entityExtractor/entitiyExtractor";
 import {Source} from "./types/types";
 import {extractSentiment} from "./sentimentExtractor/sentimentExtractor";
-import {addContentToThemes} from "./api/api";
+import {addContentToThemes, filterExistingContents, getSources, parseContent} from "./api/api";
 import express from 'express';
 import cors from "cors"
 import bodyParser from "body-parser";
 
 import cron from "node-cron";
-import moment, {Moment} from "moment";
-
-const sources: Source[] = [
-    {
-        name: "Infobae",
-        id: 1
-    }
-]
-
-// TODO GET SOURCES FIRST
-
-// TODO Check if content exists before scrapping entire html
 
 // TODO Limit concurrency
 
-
-
 const run = async () => {
+    const sources: Source[] = await getSources();
     return Promise.all(sources.map(source => {
         getContents(source)
-            .then(contents => Promise.all(contents.map((content) => getContent(content, source))))
+            .then(contents => Promise.all(contents.map(parseContent)))
+            .then(filterExistingContents)
+            .then(contents => Promise.all(contents.map((content) => getContent(content.url, source))))
             .then(contents => Promise.all(contents.map(extractEntities)))
             .then(contents => Promise.all(contents.map(extractSentiment)))
             .then(contents => Promise.all(contents.map(addContentToThemes)))

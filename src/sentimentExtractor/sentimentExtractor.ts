@@ -8,8 +8,12 @@ export const extractSentiment = (content: Content): Promise<Content> => {
     return fetch(`${urls.sentimentExtractor}/api/sentiment`,
         {
             method: "POST",
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({extraction: {title: content.title, entities: content.entities}})
         })
-        .then(res => res.json())
+        .then(res => {
+            console.log(`Finished extracting sentiment from: ${content.title}`)
+            return res.json()
+        })
         .then(res => ({...content, ...res}))
 }

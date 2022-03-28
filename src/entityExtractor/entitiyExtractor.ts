@@ -10,6 +10,9 @@ export const extractEntities = (content: Content): Promise<Content> => {
             method: "POST",
             body: JSON.stringify({content: content.title}),
         })
-        .then(res => res.json())
+        .then(res => {
+            console.log(`Finished extracting entities from: ${content.title}`)
+            return res.json()
+        })
         .then(res => ({...content, entities: res}))
 }
