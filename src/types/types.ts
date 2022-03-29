@@ -2,18 +2,20 @@ export interface Content {
     title: string;
     url: string;
     content: string[];
-    source: Source;
-    entities?: string[]
-    sentiments?: object;
     id?: number;
 }
 
 export interface Source {
-    id: number;
+    id: string;
     name: string;
 }
 
 export interface Theme {
-    id: number;
+    id: string;
     name: string;
+}
+
+export interface Sentiment {
+    entity: string,
+    value: string
 }

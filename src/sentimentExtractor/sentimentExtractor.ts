@@ -1,19 +1,21 @@
-import fetch from "node-fetch";
+import { fetch } from '../utils/middleware'
 import {urls} from "../config/config"
-import {Content} from "../types/types";
+import {Content, Sentiment} from "../types/types";
 
-export const extractSentiment = (content: Content): Promise<Content> => {
+export const getSentimentsForContentEntities = (content: Content, entities: string[]): Promise<Sentiment[]> => {
     console.log(`Extracting sentiment from: ${content.title}`)
 
-    return fetch(`${urls.sentimentExtractor}/api/sentiment`,
+    return  fetch(`${urls.sentimentExtractor}/api/sentiment`,
         {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({extraction: {title: content.title, entities: content.entities}})
+            body: JSON.stringify({extraction: {title: content.title, entities}})
         })
         .then(res => {
             console.log(`Finished extracting sentiment from: ${content.title}`)
             return res.json()
         })
-        .then(res => ({...content, ...res}))
+        .then(res =>
+            Object.entries(res.sentiments).map(([entity, value]: [entity: string, value: string]) => ({entity, value}))
+        )
 }

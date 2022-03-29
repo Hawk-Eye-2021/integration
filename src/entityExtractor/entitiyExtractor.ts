@@ -1,8 +1,9 @@
-import fetch from "node-fetch";
+import { fetch } from '../utils/middleware'
 import {urls} from "../config/config"
 import {Content} from "../types/types";
 
-export const extractEntities = (content: Content): Promise<Content> => {
+
+export const getEntitiesForContent = (content: Content): Promise<string[]> => {
     console.log(`Extracting entities from: ${content.title}`)
 
     return fetch(`${urls.entityExtractor}/contents`,
@@ -14,5 +15,4 @@ export const extractEntities = (content: Content): Promise<Content> => {
             console.log(`Finished extracting entities from: ${content.title}`)
             return res.json()
         })
-        .then(res => ({...content, entities: res}))
 }

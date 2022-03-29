@@ -1,11 +1,12 @@
-import fetch from "node-fetch";
-import {Content, Theme} from "../types/types";
+import {Content, Source, Theme} from "../types/types";
 import {urls} from "../config/config"
+import { fetch } from '../utils/middleware'
 
-const getThemeByName = (name: string): Promise<Theme[]> => {
+const getThemeByName = (name: string): Promise<Theme> => {
 
     return fetch(`${urls.api}/themes?name=${name}`)
         .then(res => res.json())
+        .then(res => res[0])
 }
 const createTheme = (name: string): Promise<Theme> => {
 
@@ -20,31 +21,27 @@ const createTheme = (name: string): Promise<Theme> => {
         .then(res => res)
 }
 
-const createContent = (content: Content): Promise<Content> => {
+export const saveContent = (content: Content, sourceId: string): Promise<string> => {
     return fetch(`${urls.api}/contents`, {
         method: "POST",
         body: JSON.stringify({
             title: content.title,
-            sourceId: content.source.id,
+            sourceId,
             url: content.url
         }),
         headers: {'Content-Type': 'application/json'}
     })
-        .then(async res => {
-            if(res.status >= 400) throw new Error((await res.json()).message)
-            else return res.json()
-        })
-        .then(res => ({...content, id: res.id}))
+        .then(res => res.json())
+        .then(res => res && res.id)
 }
 
 
-const addContentToTheme = (theme: Theme, content: Content) => {
+export const addContentToTheme = (contentId: string, themeId: string, sentiment: string) => {
 
-    const sentiment = content.sentiments[theme.name];
-    return fetch(`${urls.api}/themes/${theme.id}/contents`, {
+    return fetch(`${urls.api}/themes/${themeId}/contents`, {
         method: "POST",
         body: JSON.stringify({
-            contentId: content.id,
+            contentId,
             sentiment
         }),
         headers: {'Content-Type': 'application/json'}
@@ -52,50 +49,30 @@ const addContentToTheme = (theme: Theme, content: Content) => {
         .then(res => res.json())
 }
 
-export const addContentToThemes = async (content: Content): Promise<void> => {
-    console.log(`Adding content to themes: ${content.title}`)
 
-    try {
 
-        const themes = await Promise.all(content.entities.map(async (entity) => {
-            let [theme] = await getThemeByName(entity);
-
-            if(!theme) {
-                theme = await createTheme(entity)
-            }
-
-            return theme;
-        }))
-
-        if (themes.every(t => t.id)){
-            const savedContent = await createContent(content);
-
-            await themes.map(theme => addContentToTheme(theme, savedContent))
-        } else {
-            throw new Error(`Theme already exists`)
-        }
-    } catch (e) {
-        console.error(e)
-    }
-}
-
-export const getSources = async () => {
+export const getSources: () => Promise<Source[]> = async (): Promise<Source[]> => {
     return await fetch(`${urls.api}/sources`, {method: "GET"})
         .then(res => res.json())
 }
 
 
-export const parseContent = (url: string) => {
-
+export const contentExistsForUrl = (url: string): Promise<boolean> => {
     const encodedUrl = encodeURIComponent(url);
+    console.log(`fetching content with url: ${url}`)
     return fetch(`${urls.api}/contents/?url=${encodedUrl}`, {method: "GET"})
         .then(res => res.json())
-        .then(res => ({url, exists: res.length > 0}))
+        .then(res => res.length > 0)
+        .then(res => {
+            console.log(res ?'content exists' : 'content does not exists')
+            return res
+        })
 }
 
-export const filterExistingContents = (contents: {url: string, exists: boolean}[]) => {
-    const filteredContents = contents.filter(content => !content.exists);
-    console.log(`Initially scrapped ${contents.length} - ${filteredContents.length} don't exist`)
-
-    return filteredContents;
+export const getOrCreateThemeByName = async (entity: string) => {
+    const theme = await getThemeByName(entity)
+    if (!theme || !theme.id){
+        return createTheme(entity)
+    }
+    return theme
 }
