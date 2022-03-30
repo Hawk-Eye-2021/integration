@@ -7,7 +7,7 @@ import express from 'express';
 import cors from "cors"
 import bodyParser from "body-parser";
 
-const MAX_CONTENTS_PER_RUN = 20
+const MAX_CONTENTS_PER_RUN = 2
 
 const run = async () => {
 
