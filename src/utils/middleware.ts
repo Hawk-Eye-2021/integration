@@ -1,9 +1,8 @@
-const {compose} = require('node-fetch-middleware')
-
+import {compose} from "node-fetch-middleware"
 
 const reject= async (url, init, next) => {
     const response = await next(url, init)
-    if (response.status != 200){
+    if (response.status !== 200){
         throw new Error(`request error: ${JSON.stringify(response)}`)
     }
     else return  response

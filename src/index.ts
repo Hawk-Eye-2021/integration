@@ -1,5 +1,5 @@
 import {addContentToTheme, contentExistsForUrl, getOrCreateThemeByName, getSources, saveContent} from "./api/api";
-import {getContent, getCurrentUrls} from "./scrapper/scrapper";
+import {getContent, getContents} from "./scrapper/scrapper";
 import {Source} from "./types/types";
 import {getEntitiesForContent} from "./entityExtractor/entitiyExtractor";
 import {getSentimentsForContentEntities} from "./sentimentExtractor/sentimentExtractor";
@@ -7,7 +7,7 @@ import express from 'express';
 import cors from "cors"
 import bodyParser from "body-parser";
 
-const MAX_URLS_PER_RUN = 5
+const MAX_CONTENTS_PER_RUN = 20
 
 const run = async () => {
 
@@ -16,33 +16,43 @@ const run = async () => {
     for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex++) {
         const source = sources[sourceIndex]
 
-        const urls = await getCurrentUrls(source)
+        const contents = await getContents(source)
 
-        const newUrls = []
-        for (let urlIndex = 0; urlIndex < urls.length; urlIndex++) {
-            const url = urls[urlIndex]
+        const newContents = []
+        for (let contentIndex = 0; contentIndex < contents.length; contentIndex++) {
+            const url = contents[contentIndex].url
             if (!await contentExistsForUrl(url)) {
-                newUrls.push(url)
+                newContents.push(contents[contentIndex])
             }
-            if (newUrls.length === MAX_URLS_PER_RUN){
+            if (newContents.length === MAX_CONTENTS_PER_RUN){
                 break
             }
         }
 
-        const urlsToParse = newUrls.slice(0, MAX_URLS_PER_RUN)
+        const contentsToParse = newContents.slice(0, MAX_CONTENTS_PER_RUN)
 
-        for (let urlToParseIndex = 0; urlToParseIndex < urlsToParse.length; urlToParseIndex++) {
+        for (let contentsToParseIndex = 0; contentsToParseIndex < contentsToParse.length; contentsToParseIndex++) {
 
-            const newUrl = urlsToParse[urlToParseIndex]
-            const content =  await getContent(newUrl, source)
-            const entities = await getEntitiesForContent(content)
-            const sentiments = await getSentimentsForContentEntities(content, entities)
-            const contentId = await saveContent(content, source.id)
-            for (let entityIndex = 0; entityIndex < entities.length; entityIndex++) {
-                const entity = entities[entityIndex]
-                const sentiment = sentiments.find(s => s.entity === entity)
-                const theme = await getOrCreateThemeByName(entity)
-                await addContentToTheme(contentId, theme.id, sentiment.value)
+            try {
+                const newContent = contentsToParse[contentsToParseIndex]
+                let content;
+                if(!newContent.data) {
+                    content = await getContent(newContent.url, source)
+                } else {
+                    content = {url: newContent.url, title: newContent.data.content}
+                }
+
+                const entities = await getEntitiesForContent(content)
+                const sentiments = await getSentimentsForContentEntities(content, entities)
+                const contentId = await saveContent(content, source.id)
+                for (let entityIndex = 0; entityIndex < entities.length; entityIndex++) {
+                    const entity = entities[entityIndex]
+                    const sentiment = sentiments.find(s => s.entity === entity)
+                    const theme = await getOrCreateThemeByName(entity)
+                    await addContentToTheme(contentId, theme.id, sentiment.value)
+                }
+            } catch (e) {
+                console.error(e)
             }
         }
     }

@@ -19,3 +19,11 @@ export interface Sentiment {
     entity: string,
     value: string
 }
+
+export type DataElement = {
+    url: string,
+    data?: {
+        title: string,
+        content: string
+    }
+}
