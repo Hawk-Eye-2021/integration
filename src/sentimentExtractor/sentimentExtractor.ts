@@ -5,6 +5,9 @@ import {Content, Sentiment} from "../types/types";
 export const getSentimentsForContentEntities = (content: Content, entities: string[]): Promise<Sentiment[]> => {
     console.log(`Extracting sentiment from: ${content.title}`)
 
+    if (entities.length === 0){
+        return Promise.resolve([])
+    }
     return  fetch(`${urls.sentimentExtractor}/api/sentiment`,
         {
             method: "POST",

@@ -36,9 +36,7 @@ const run = async () => {
             const newUrl = urlsToParse[urlToParseIndex]
             const content =  await getContent(newUrl, source)
             const entities = await getEntitiesForContent(content)
-            if (entities.length === 0) continue
             const sentiments = await getSentimentsForContentEntities(content, entities)
-
             const contentId = await saveContent(content, source.id)
             for (let entityIndex = 0; entityIndex < entities.length; entityIndex++) {
                 const entity = entities[entityIndex]
